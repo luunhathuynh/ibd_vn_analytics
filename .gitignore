@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Test and tooling cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.*
+
+# Generated market data
+data/raw/
+data/processed/
+
+# Generated reports
+reports/*.md
+reports/universe_summary.csv
+
+# Keep directory placeholders if added later
+!data/.gitkeep
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!reports/.gitkeep
