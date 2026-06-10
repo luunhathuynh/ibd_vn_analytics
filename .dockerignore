@@ -1,0 +1,35 @@
+# Git / IDE
+.git
+.gitignore
+.idea
+.vscode
+.cursor
+
+# Python local
+.venv
+venv
+env
+__pycache__
+*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+htmlcov
+dist
+build
+*.egg-info
+
+# Generated data (mounted as volumes at runtime)
+data/raw/*
+data/processed/*
+reports/*
+
+# Docs / planning (not needed in image)
+memory-bank
+*.md
+!README.md
+
+# Env secrets
+.env
+.env.*

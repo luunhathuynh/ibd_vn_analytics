@@ -1,0 +1,3 @@
+from src.integrations.base import unavailable_candlestick
+
+load_candlestick_snapshot = unavailable_candlestick

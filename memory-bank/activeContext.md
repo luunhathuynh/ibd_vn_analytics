@@ -2,27 +2,46 @@
 
 ## Trạng thái hiện tại
 
-Dự án đang ở trạng thái **ổn định, không có task đang dở**.
+Dự án đã hoàn thành **MVP API + JSON + LLM contract** (2026-06-10). CLI Markdown vẫn hoạt động; thêm FastAPI + fusion scoring. **42 pytest pass.**
 
-## Quyết định gần đây
+## Công việc vừa hoàn thành (session 2026-06-10)
 
-- Memory bank được khởi tạo lần đầu (session hiện tại)
-- Cấu trúc 6 file memory-bank đã được thiết lập
+1. **Schemas** — `src/schemas/llm.py` (Pydantic v2), `errors.py` (`NO_CACHED_REPORT`, `REAL_DATA_UNAVAILABLE`)
+2. **Pipeline refactor** — `run_pipeline()`, `PipelineMetadata`, CLI wrapper `run_report()` giữ contract
+3. **data_status** — `build_data_status()` phân biệt demo_requested vs fallback_used
+4. **JSON reports** — `*_market_report.json`, `*_candidates.json` song song Markdown
+5. **Fusion** — scoring, rules, reason_codes; unsafe composite contract
+6. **Integrations** — stub CANSLIM/Payback/Candlestick (`available=false`)
+7. **FastAPI** — 6 endpoints, cache-first, 503 rules, auth optional (default off)
+8. **Docs** — `docs/llm_contract.md`, README cập nhật
+9. **Tests** — 5 file test mới + regression CLI
+
+## Quyết định kiến trúc đã chốt
+
+- **Không refactor core** analytics — chỉ bọc layer mới
+- **API bind `127.0.0.1`**, không auth phase 1
+- **`refresh=false` + no cache → 503**, không auto pipeline
+- **`llm_safe_to_analyze=false`** → bắt buộc full unsafe composite trên mọi symbol
+- **CLI** có thể demo fallback; **API** không fallback demo
+- **Integrations** post-MVP — chỉ schema + stub
 
 ## Preferences
 
-- Giao diện CLI, không có web frontend
-- Output Markdown, không PDF hay HTML
-- Vietnamese messages trong log
-- Config-driven thresholds, không hardcode
-
-## Learnings
-
-- `config/market.yml` provider config hiện đang ở mode test (max_requests_per_minute=0, min_real_stock_success_ratio=0.0) — cần cập nhật khi dùng dữ liệu thật
-- Fallback sang DemoProvider xảy ra khi: env `IBD_DATA_PROVIDER=demo`, lỗi import vnstock, hoặc quá nhiều lỗi liên tiếp khi tải dữ liệu
-- `sectors.csv` là bắt buộc — cổ phiếu thiếu mapping sẽ bị loại khỏi universe
+- CLI + Markdown tiếng Việt (giữ nguyên)
+- JSON/API messages và reason codes tiếng Anh (LLM contract)
+- Config-driven thresholds
+- Tests offline — mock pipeline, không network/vnstock
 
 ## Watch Points
 
-- Nếu muốn chuyển sang dùng dữ liệu thật: cập nhật `config/market.yml` provider section (bỏ comment section đã có)
-- Distribution Day rule phức tạp có thể cần validation thêm khi thị trường biến động mạnh
+- `min_real_stock_success_ratio: 0.0` trong dev config — bật **0.8** khi dùng vnstock production
+- Comment block production provider trong `market.yml` (18 req/min, 70% ratio) — uncomment khi go-live
+- Starlette deprecation: TestClient + httpx → có thể chuyển httpx2 sau
+- Trước khi deploy API public: bật `api.auth_enabled` hoặc reverse proxy
+
+## Next steps (post-MVP)
+
+- Adapter thật CANSLIM / Payback / Candlestick
+- Map field khi có sample JSON từ project khác
+- `actionable_candidate` khi có candlestick BUY + RR ≥ 1.5
+- Auth bắt buộc nếu expose ra Internet

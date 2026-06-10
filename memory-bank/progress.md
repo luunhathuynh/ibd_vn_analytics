@@ -2,38 +2,58 @@
 
 ## Đã hoàn thành
 
-- [x] **Pipeline chính** — `pipeline.py` orchestrator đầy đủ từ provider → cache → universe → indicators → market status → screeners → report
-- [x] **Data Provider** — `VNStockProvider` (dữ liệu thật) + `DemoProvider` (deterministic demo)
-- [x] **CSV Cache** — `CsvDataCache` lưu/đọc dữ liệu thô từ `data/raw/`
-- [x] **Universe Filter** — `build_universe()` lọc theo sector mapping + liquidity + history length
-- [x] **Technical Indicators** — `add_common_indicators()` tính MA, RSI, ATR, volume_ratio, change_pct
-- [x] **Market Status** — Xác định 4 trạng thái IBD (Confirmed Uptrend, Rally Attempt, Under Pressure, Correction)
-- [x] **Distribution Day** — Đếm + auto-expiry khi index phục hồi ≥ 5%
-- [x] **Follow-Through Day** — Phát hiện FTD sau rally attempt
-- [x] **Stock Metrics** — RS Score (percentile ranking), breakout detection, warning flags
-- [x] **Stock Screeners** — Leaders (RS≥70 + MA50/200), Breakouts (20/50d high + volume), Watchlist, Warnings
-- [x] **Market Breadth** — Advancers/Decliners, % trên MA50/MA200, new high ratio
-- [x] **Sector Performance** — Sector RS so với VNINDEX
-- [x] **Markdown Report** — `render_report()` xuất `reports/YYYY-MM-DD_market_report.md`
-- [x] **Config System** — Load từ `config/market.yml` + `config/sectors.csv`
-- [x] **Date Resolution** — `resolve_report_date()` tự lùi về phiên giao dịch gần nhất
-- [x] **Provider Fallback** — VNStockProvider → DemoProvider khi lỗi
-- [x] **Test Suite** — 5 test files bao phủ indicators, market status, screeners, provider/cache, dates/report
-- [x] **Memory Bank** — Khởi tạo 6 file memory bank
+### Core IBD (trước MVP)
 
-## Chưa có / Chưa biết
+- [x] Pipeline orchestrator — provider → cache → universe → indicators → market status → screeners
+- [x] VNStockProvider + DemoProvider + CSV cache
+- [x] Universe filter (sector, liquidity, history)
+- [x] Technical indicators (MA, RSI, ATR, volume_ratio)
+- [x] Market Status — 4 trạng thái IBD, DD, FTD, rally attempt
+- [x] Stock metrics — RS Score, breakout, warnings
+- [x] Stock lists — Leaders, Breakouts, Watchlist, Warnings
+- [x] Market breadth + sector RS
+- [x] Markdown report — 9 sections tiếng Việt
+- [x] Config + date resolution + CLI fallback demo
+- [x] Test suite core (indicators, market_status, screeners, provider, dates/report)
 
-- Không có issue hay bug nào đang được ghi nhận
-- Chưa có yêu cầu tính năng mới
+### MVP API + JSON + LLM (2026-06-10)
+
+- [x] **Pydantic schemas** — `DailyMarketReportJson`, `DataStatus`, `StockSnapshot`, `CompositeSnapshot`, placeholders CANSLIM/Payback/Candlestick
+- [x] **`LLM_CONTRACT_VERSION = "1.0.0"`**
+- [x] **`run_pipeline()`** + `PipelineMetadata` (attempted/failed/missing symbols, demo_requested, fallback_used)
+- [x] **`build_data_status()`** — llm_safe rules, is_stale
+- [x] **JSON output** — `*_market_report.json`, `*_candidates.json` từ CLI
+- [x] **Fusion scoring** — market + technical weights; `unsafe_composite_snapshot()`; reason codes
+- [x] **Integration stubs** — `available=false` MVP
+- [x] **FastAPI** — `/health`, `/data-status`, `/market/daily`, `/candidates`, `/stocks/{symbol}/snapshot|explain`
+- [x] **report_store** — cache-first, 503 `NO_CACHED_REPORT`, 503 `REAL_DATA_UNAVAILABLE`
+- [x] **Optional API key** — `api.auth_enabled=false` default
+- [x] **`docs/llm_contract.md`** + README
+- [x] **Tests mới** — schemas, data_status, fusion, api, pipeline regression (**42 total pass**)
+- [x] **Memory bank** cập nhật sau MVP
+
+## Chưa có / Post-MVP
+
+- [ ] Tích hợp thật CANSLIM scanner (local JSON adapter)
+- [ ] Tích hợp Payback Time (local JSON/CSV)
+- [ ] Tích hợp Candlestick Scanner (HTTP API)
+- [ ] Label `actionable_candidate` với timing signal + RR ≥ 1.5
+- [ ] Auth bắt buộc + deploy public
+- [ ] POST batch symbols endpoint
+- [ ] Wire `cfg["indicators"]` vào pipeline (hiện hardcode MA windows ở call sites)
+- [ ] Production provider config (rate limit 18/min, success ratio 0.8)
 
 ## Known Technical Debt
 
-- Provider config hiện ở mode test (max_requests_per_minute=0) — chưa có rate limiting thật
-- `_compact_reason()` trong pipeline có unicode matching phức tạp (có thể fail với encoding khác)
-- Không có authentication/authorization (dự án chạy local)
+- Provider config dev mode (`min_real_stock_success_ratio: 0.0`)
+- `_compact_reason()` unicode matching phức tạp
+- `load_report_cached(date=latest)` đánh `is_stale=true` khi serve cache (by design)
+- Integrations config `enabled=true` chưa implement — chỉ stub
+- FastAPI TestClient httpx deprecation warning
 
 ## Evolution
 
 | Ngày | Thay đổi |
 |---|---|
-| 2026-06-09 | Khởi tạo memory bank lần đầu |
+| 2026-06-09 | Khởi tạo memory bank |
+| 2026-06-10 | MVP: FastAPI + JSON + data_status + fusion + LLM contract; 42 tests; memory bank cập nhật |

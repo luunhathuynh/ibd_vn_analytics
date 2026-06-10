@@ -1,0 +1,56 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ibd_vn_analytics_api
+    ports:
+      - "8000:8000"
+    environment:
+      IBD_DATA_PROVIDER: ${IBD_DATA_PROVIDER:-demo}
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ./config:/app/config:ro
+      - ./data:/app/data
+      - ./reports:/app/reports
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  cli:
+    profiles: ["cli"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      IBD_DATA_PROVIDER: ${IBD_DATA_PROVIDER:-demo}
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ./config:/app/config:ro
+      - ./data:/app/data
+      - ./reports:/app/reports
+    entrypoint: ["/entrypoint.sh"]
+    command: ["python", "main.py", "--latest"]
+
+  test:
+    profiles: ["test"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      IBD_DATA_PROVIDER: demo
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ./config:/app/config:ro
+    entrypoint: ["/entrypoint.sh"]
+    command: ["pytest", "-q"]

@@ -12,6 +12,8 @@ provider:
   retry_backoff_seconds: 0
   fallback_after_consecutive_failures: 3
   min_real_stock_success_ratio: 0.0
+  allow_demo_fallback_for_cli: true
+  allow_demo_fallback_for_api: false
 # provider:
 #   max_requests_per_minute: 18
 #   retry_attempts: 3
@@ -81,3 +83,31 @@ screeners:
   warning_drop_pct: 3.0
   warning_volume_ratio: 1.5
   leading_sectors_limit: 10
+
+api:
+  host: "127.0.0.1"
+  port: 8000
+  auth_enabled: false
+  api_key_env: IBD_API_KEY
+
+integrations:
+  canslim:
+    enabled: false
+    input_path: "../canslim/output/latest_summary.json"
+  payback:
+    enabled: false
+    input_path: "../payback/output/filter_results.json"
+  candlestick:
+    enabled: false
+    api_base_url: "http://127.0.0.1:8001"
+    api_key_env: CANDLESTICK_API_KEY
+
+fusion:
+  weights:
+    market: 0.25
+    technical: 0.35
+    canslim: 0.20
+    valuation: 0.10
+    timing: 0.10
+  min_rr_for_actionable: 1.5
+  rs_strong_threshold: 70
